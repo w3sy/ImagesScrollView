@@ -25,7 +25,6 @@
     _images = [NSMutableArray array];
     for (NSInteger i = 0; i < 12; i++) {
         NSString * imgName = [NSString stringWithFormat:@"background_0%02ld.jpg", i];
-        NSLog(@"%@", imgName);
         UIImage * img = [UIImage imageNamed:imgName];
         [_images addObject:img];
     }
