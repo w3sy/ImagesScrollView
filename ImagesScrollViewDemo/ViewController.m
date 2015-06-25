@@ -25,7 +25,7 @@
     _images = [NSMutableArray array];
     for (NSInteger i = 0; i < 12; i++) {
         NSString * imgName = [NSString stringWithFormat:@"background_0%02ld.jpg", i];
-        //NSLog(@"%@", imgName);
+        NSLog(@"%@", imgName);
         UIImage * img = [UIImage imageNamed:imgName];
         [_images addObject:img];
     }
@@ -43,7 +43,7 @@
 
 - (NSInteger)numberOfImagesInImagesScrollView:(ImagesScrollView *)imagesScrollView
 {
-    return 3;//_images.count;
+    return _images.count;
 }
 
 - (UIImage *)imagesScrollView:(ImagesScrollView *)imagesScrollView imageWithIndex:(NSInteger)index
