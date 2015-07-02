@@ -174,11 +174,13 @@ typedef NS_ENUM(NSInteger, ImagesScrollViewPage) {
     // 判断是否通过网络下载图片
     if ([self.delegate respondsToSelector:@selector(imagesScrollView:imageUrlStringWithIndex:)]) {
         NSString * imageUrlString = [self.delegate imagesScrollView:self imageUrlStringWithIndex:index];
-        [imageView setImageWithURL:[NSURL URLWithString:imageUrlString] placeholderImage:self.placeholderImage];
-    // 否则直接请求图片
-    } else {
-        imageView.image = [self imageWithIndex:index];
+        if (imageUrlString) {
+            [imageView setImageWithURL:[NSURL URLWithString:imageUrlString] placeholderImage:self.placeholderImage];
+            return;
+        }
     }
+    // 否则直接请求图片
+    imageView.image = [self imageWithIndex:index];
 }
 
 // 初始化时加载所需图片
