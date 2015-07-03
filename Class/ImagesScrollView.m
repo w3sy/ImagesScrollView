@@ -36,6 +36,7 @@ typedef NS_ENUM(NSInteger, ImagesScrollViewPage) {
 {
     if (self = [super initWithFrame:frame]) {
         [self loadNib];
+        [self addTapAction];
     }
     return self;
 }
@@ -44,6 +45,7 @@ typedef NS_ENUM(NSInteger, ImagesScrollViewPage) {
 {
     if (self = [super initWithCoder:aDecoder]) {
         [self loadNib];
+        [self addTapAction];
     }
     return self;
 }
@@ -65,6 +67,12 @@ typedef NS_ENUM(NSInteger, ImagesScrollViewPage) {
     NSLayoutConstraint * bottom = [NSLayoutConstraint constraintWithItem:self.contentView attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeBottom multiplier:1 constant:0];
     NSLayoutConstraint * right = [NSLayoutConstraint constraintWithItem:self.contentView attribute:NSLayoutAttributeTrailing relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeTrailing multiplier:1 constant:0];
     [self addConstraints:@[top, left, bottom, right]];
+}
+
+- (void)addTapAction
+{
+    UITapGestureRecognizer * tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapAction:)];
+    [self addGestureRecognizer:tap];
 }
 
 // 加载PageControl到view中
@@ -139,7 +147,7 @@ typedef NS_ENUM(NSInteger, ImagesScrollViewPage) {
             newOffset = 0;
         }
     }
-    NSLog(@"%f", newOffset);
+    //NSLog(@"%f", newOffset);
     self.mainScrollView.contentOffset = CGPointMake(newOffset, 0);
 }
 
@@ -156,7 +164,7 @@ typedef NS_ENUM(NSInteger, ImagesScrollViewPage) {
 // 按索引号加载图片到page位置的UIImageView上
 - (void)loadImageWithIndex:(NSInteger)index at:(ImagesScrollViewPage)page
 {
-    UIImageView * imageView = nil;
+    __weak UIImageView * imageView = nil;
     switch (page) {
         case ImagesScrollViewPagePrevious:
             imageView = self.previousImageView;
@@ -175,7 +183,18 @@ typedef NS_ENUM(NSInteger, ImagesScrollViewPage) {
     if ([self.delegate respondsToSelector:@selector(imagesScrollView:imageUrlStringWithIndex:)]) {
         NSString * imageUrlString = [self.delegate imagesScrollView:self imageUrlStringWithIndex:index];
         if (imageUrlString) {
+#if DEBUG
+            //
+            NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:imageUrlString]];
+            [request addValue:@"image/*" forHTTPHeaderField:@"Accept"];
+            [imageView setImageWithURLRequest:request placeholderImage:self.placeholderImage success:^(NSURLRequest *request, NSHTTPURLResponse *response, UIImage *image) {
+                imageView.image = image;
+            } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error) {
+                NSLog(@"%@", error);
+            }];
+#else
             [imageView setImageWithURL:[NSURL URLWithString:imageUrlString] placeholderImage:self.placeholderImage];
+#endif
             return;
         }
     }
@@ -308,6 +327,13 @@ typedef NS_ENUM(NSInteger, ImagesScrollViewPage) {
     self.previousImageView.contentMode = contentMode;
     self.currentImageView.contentMode = contentMode;
     self.nextImageView.contentMode = contentMode;
+}
+
+- (void)tapAction:(UITapGestureRecognizer *)sender
+{
+    if ([self.delegate respondsToSelector:@selector(imagesScrollView:didSelectIndex:)]) {
+        [self.delegate imagesScrollView:self didSelectIndex:_currentIndex];
+    }
 }
 
 @end

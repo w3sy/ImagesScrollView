@@ -13,7 +13,7 @@
 @protocol ImagesScrollViewDelegate <NSObject>
 
 /**
- 返回图片总数
+ * 返回图片总数
  */
 - (NSInteger)numberOfImagesInImagesScrollView:(ImagesScrollView *)imagesScrollView;
 
@@ -31,6 +31,12 @@
  * index : 获取图片的序号
  */
 - (NSString *)imagesScrollView:(ImagesScrollView *)imagesScrollView imageUrlStringWithIndex:(NSInteger)index ;
+
+/**
+ * 用户点选动作
+ * index : 图片的序号
+ */
+- (void)imagesScrollView:(ImagesScrollView *)imagesScrollView didSelectIndex:(NSInteger)index;
 
 @end
 

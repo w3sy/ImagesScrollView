@@ -79,4 +79,9 @@
     }
 }
 
+- (void)imagesScrollView:(ImagesScrollView *)imagesScrollView didSelectIndex:(NSInteger)index
+{
+    NSLog(@"tap:%@ at:%ld", imagesScrollView, index);
+}
+
 @end
