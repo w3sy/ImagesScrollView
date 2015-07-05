@@ -19,6 +19,7 @@ typedef NS_ENUM(NSInteger, ImagesScrollViewPage) {
 {
     NSInteger _imagesCount;
     NSInteger _currentIndex;
+    NSTimer * _autoScrollTimer;
 }
 
 @property (weak, nonatomic) IBOutlet UIView *contentView;
@@ -50,6 +51,12 @@ typedef NS_ENUM(NSInteger, ImagesScrollViewPage) {
     return self;
 }
 
+// View显示时初始设置
+- (void)drawRect:(CGRect)rect {
+    // Drawing code
+    [self initialization];
+}
+
 - (void)dealloc
 {
     [self.mainScrollView removeObserver:self forKeyPath:@"center"];
@@ -69,44 +76,21 @@ typedef NS_ENUM(NSInteger, ImagesScrollViewPage) {
     [self addConstraints:@[top, left, bottom, right]];
 }
 
+// 添加点击响应手势
 - (void)addTapAction
 {
     UITapGestureRecognizer * tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapAction:)];
     [self addGestureRecognizer:tap];
 }
 
-// 加载PageControl到view中
-- (void)loadPageControl
+- (void)tapAction:(UITapGestureRecognizer *)sender
 {
-    if (self.pageControl == nil) {
-        _pageControl = [[UIPageControl alloc] init];
-        self.pageControl.hidesForSinglePage = YES;
-    } else {
-        [self.pageControl removeFromSuperview];
-    }
-    self.pageControl.translatesAutoresizingMaskIntoConstraints = NO;
-    [self addSubview:self.pageControl];
-    self.pageControl.numberOfPages = _imagesCount;
-    self.pageControl.currentPage = _currentIndex;
-    NSLayoutConstraint * x = [NSLayoutConstraint constraintWithItem:self.pageControl attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeCenterX multiplier:1 constant:0];
-    NSLayoutConstraint * y = [NSLayoutConstraint constraintWithItem:self.pageControl attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeBottom multiplier:1 constant:0];
-    [self addConstraints:@[x, y]];
-}
-
-// 更新PageControl页数
-- (void)changePageControlIndex
-{
-    if ([self.pageControl respondsToSelector:@selector(setCurrentPage:)]) {
-        self.pageControl.currentPage = _currentIndex;
+    if ([self.delegate respondsToSelector:@selector(imagesScrollView:didSelectIndex:)]) {
+        [self.delegate imagesScrollView:self didSelectIndex:_currentIndex];
     }
 }
 
-- (void)drawRect:(CGRect)rect {
-    // Drawing code
-    // 初始化设置
-    [self initialization];
-}
-
+// 代理设置
 - (void)setDelegate:(id<ImagesScrollViewDelegate>)delegate
 {
     _delegate = delegate;
@@ -115,6 +99,7 @@ typedef NS_ENUM(NSInteger, ImagesScrollViewPage) {
     }
 }
 
+// 初始化设置
 - (void)initialization
 {
     self.mainScrollView.delegate = self;
@@ -128,6 +113,7 @@ typedef NS_ENUM(NSInteger, ImagesScrollViewPage) {
     [self.mainScrollView addObserver:self forKeyPath:@"center" options:NSKeyValueObservingOptionNew|NSKeyValueObservingOptionOld context:nil];
 }
 
+// 监听View显示位置变化
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
     if ([keyPath isEqualToString:@"center"]) {
@@ -299,6 +285,90 @@ typedef NS_ENUM(NSInteger, ImagesScrollViewPage) {
     [self changePageControlIndex];
 }
 
+// 开始拖动View时暂停自动滚动
+- (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView
+{
+    [self autoScrollImages:NO];
+}
+
+// 结束拖动View时继续自动滚动
+- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate
+{
+    [self autoScrollImages:YES];
+}
+
+// 自动滚动后修正显示数据
+- (void)scrollViewDidEndScrollingAnimation:(UIScrollView *)scrollView
+{
+    [self scrollViewDidEndDecelerating:scrollView];
+}
+
+// 定时器控制自动滚动
+- (void)autoScrollImages:(BOOL)autoScroll
+{
+    if (autoScroll && self.autoScrollInterval) {
+        if (_autoScrollTimer) {
+            [_autoScrollTimer invalidate];
+        }
+        _autoScrollTimer = [NSTimer scheduledTimerWithTimeInterval:self.autoScrollInterval target:self selector:@selector(autoScrollAction) userInfo:nil repeats:YES];
+    } else {
+        [_autoScrollTimer invalidate];
+        _autoScrollTimer = nil;
+    }
+}
+
+// 自动滚动动作
+- (void)autoScrollAction
+{
+    CGFloat offsetX = self.mainScrollView.contentOffset.x;
+    CGFloat scrollViewWidth = self.mainScrollView.bounds.size.width;
+    if (_imagesCount <= 1) {
+        return;
+    }
+    // 不循环情况下初始滚动
+    if (offsetX == 0) {
+        [self.mainScrollView setContentOffset:CGPointMake(scrollViewWidth, 0) animated:YES];
+    // 一般情况下
+    } else if (offsetX == scrollViewWidth) {
+        [self.mainScrollView setContentOffset:CGPointMake(scrollViewWidth * 2, 0) animated:YES];
+    // 不循环情况下末位滚动
+    } else if (offsetX == scrollViewWidth * 2) {
+        [self autoScrollImages:NO];
+        NSTimeInterval interval = 1.0 / MIN(60, _imagesCount);
+        [self scrollBackToFirst:_imagesCount - 1 interval:interval];
+    }
+}
+
+// 不循环状态下回滚至最前一页
+- (void)scrollBackToFirst:(NSInteger)numToScroll interval:(NSTimeInterval)interval
+{
+    CGFloat scrollViewWidth = self.mainScrollView.bounds.size.width;
+    if (numToScroll == _imagesCount - 1) {
+        [UIView animateWithDuration:interval delay:0.5 options:UIViewAnimationOptionCurveEaseIn animations:^{
+            self.mainScrollView.contentOffset = CGPointMake(scrollViewWidth, 0);
+        } completion:^(BOOL finished) {
+            [self scrollViewDidEndDecelerating:self.mainScrollView];
+            [self scrollBackToFirst:numToScroll - 1 interval:interval];
+        }];
+    } else if (numToScroll > 0) {
+        [UIView animateWithDuration:interval delay:0 options:UIViewAnimationOptionCurveLinear animations:^{
+            self.mainScrollView.contentOffset = CGPointMake(0, 0);
+        } completion:^(BOOL finished) {
+            [self scrollViewDidEndDecelerating:self.mainScrollView];
+            [self scrollBackToFirst:numToScroll - 1 interval:interval];
+        }];
+    } else if (numToScroll == 0) {
+        [self autoScrollImages:YES];
+    }
+}
+
+// 设置自动滚动间隔并启用
+- (void)setAutoScrollInterval:(NSTimeInterval)autoScrollInterval
+{
+    _autoScrollInterval = autoScrollInterval;
+    [self autoScrollImages:YES];
+}
+
 // 设置是否显示PageControl
 - (void)setShowPageControl:(BOOL)showPageControl
 {
@@ -316,6 +386,33 @@ typedef NS_ENUM(NSInteger, ImagesScrollViewPage) {
     [self loadPageControl];
 }
 
+// 加载PageControl到view中
+- (void)loadPageControl
+{
+    if (self.pageControl == nil) {
+        _pageControl = [[UIPageControl alloc] init];
+        self.pageControl.hidesForSinglePage = YES;
+    } else {
+        [self.pageControl removeFromSuperview];
+    }
+    self.pageControl.translatesAutoresizingMaskIntoConstraints = NO;
+    [self addSubview:self.pageControl];
+    self.pageControl.numberOfPages = _imagesCount;
+    self.pageControl.currentPage = _currentIndex;
+    NSLayoutConstraint * x = [NSLayoutConstraint constraintWithItem:self.pageControl attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeCenterX multiplier:1 constant:0];
+    NSLayoutConstraint * y = [NSLayoutConstraint constraintWithItem:self.pageControl attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeBottom multiplier:1 constant:0];
+    [self addConstraints:@[x, y]];
+}
+
+// 更新PageControl页数
+- (void)changePageControlIndex
+{
+    if ([self.pageControl respondsToSelector:@selector(setCurrentPage:)]) {
+        self.pageControl.currentPage = _currentIndex;
+    }
+}
+
+// 刷新显示内容
 - (void)reloadData
 {
     [self requestImagesCount];
@@ -327,13 +424,6 @@ typedef NS_ENUM(NSInteger, ImagesScrollViewPage) {
     self.previousImageView.contentMode = contentMode;
     self.currentImageView.contentMode = contentMode;
     self.nextImageView.contentMode = contentMode;
-}
-
-- (void)tapAction:(UITapGestureRecognizer *)sender
-{
-    if ([self.delegate respondsToSelector:@selector(imagesScrollView:didSelectIndex:)]) {
-        [self.delegate imagesScrollView:self didSelectIndex:_currentIndex];
-    }
 }
 
 @end

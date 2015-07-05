@@ -48,6 +48,7 @@
 @property (nonatomic, readonly) NSInteger currentIndex; // 当前索引号
 @property (nonatomic) UIPageControl * pageControl; // 页码控件，可以自定义设置或创建
 @property (nonatomic) BOOL showPageControl; // 是否显示页码控件
+@property (nonatomic) NSTimeInterval autoScrollInterval; // 自动滚动间隔(秒)，默认为0，不自动滚动
 
 /**
  刷新显示

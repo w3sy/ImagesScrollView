@@ -25,6 +25,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
+    self.imagesScrollView.autoScrollInterval = 2;
     _images = [NSMutableArray array];
     _imageUrls = [NSMutableArray array];
     for (NSInteger i = 0; i < 12; i++) {
@@ -32,18 +33,19 @@
         UIImage * img = [UIImage imageNamed:imgName];
         [_images addObject:img];
         
-        NSString * imgUrl = [NSString stringWithFormat:@"http://swkits.com/Images/background_0%02ld.jpg", i];
-        [_imageUrls addObject:imgUrl];
+        //NSString * imgUrl = [NSString stringWithFormat:@"http://swkits.com/Images/background_0%02ld.jpg", i];
+        //[_imageUrls addObject:imgUrl];
     }
     [self.imagesScrollView reloadData];
     self.imagesScrollView.isLoop = YES;
     self.imagesScrollView.delegate = self;
     [self.imagesScrollView setImageViewContentMode:UIViewContentModeScaleAspectFill];
+    //self.imagesScrollView.autoScrollInterval = 0;
     
     
-    self.imagesScrollViewfromUrl = [[ImagesScrollView alloc] initWithFrame:CGRectMake(0, 40, 320, 200)];
-    [self.view addSubview:self.imagesScrollViewfromUrl];
-    self.imagesScrollViewfromUrl.delegate = self;
+//    self.imagesScrollViewfromUrl = [[ImagesScrollView alloc] initWithFrame:CGRectMake(0, 40, 320, 200)];
+//    [self.view addSubview:self.imagesScrollViewfromUrl];
+//    self.imagesScrollViewfromUrl.delegate = self;
     
 }
 
