@@ -36,8 +36,7 @@ typedef NS_ENUM(NSInteger, ImagesScrollViewPage) {
 - (instancetype)initWithFrame:(CGRect)frame
 {
     if (self = [super initWithFrame:frame]) {
-        [self loadNib];
-        [self addTapAction];
+        [self initialize];
     }
     return self;
 }
@@ -45,8 +44,7 @@ typedef NS_ENUM(NSInteger, ImagesScrollViewPage) {
 - (instancetype)initWithCoder:(NSCoder *)aDecoder
 {
     if (self = [super initWithCoder:aDecoder]) {
-        [self loadNib];
-        [self addTapAction];
+        [self initialize];
     }
     return self;
 }
@@ -54,7 +52,7 @@ typedef NS_ENUM(NSInteger, ImagesScrollViewPage) {
 // View显示时初始设置
 - (void)drawRect:(CGRect)rect {
     // Drawing code
-    [self initialization];
+    [self initializeWhenDraw];
 }
 
 - (void)dealloc
@@ -100,7 +98,14 @@ typedef NS_ENUM(NSInteger, ImagesScrollViewPage) {
 }
 
 // 初始化设置
-- (void)initialization
+- (void)initialize
+{
+    [self loadNib];
+    [self addTapAction];
+}
+
+// 初始化设置
+- (void)initializeWhenDraw
 {
     self.mainScrollView.delegate = self;
     self.mainScrollView.scrollEnabled = NO;
@@ -169,18 +174,16 @@ typedef NS_ENUM(NSInteger, ImagesScrollViewPage) {
     if ([self.delegate respondsToSelector:@selector(imagesScrollView:imageUrlStringWithIndex:)]) {
         NSString * imageUrlString = [self.delegate imagesScrollView:self imageUrlStringWithIndex:index];
         if (imageUrlString) {
-#if DEBUG
-            //
             NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:imageUrlString]];
             [request addValue:@"image/*" forHTTPHeaderField:@"Accept"];
+            imageView.image = self.placeholderImage;
             [imageView setImageWithURLRequest:request placeholderImage:self.placeholderImage success:^(NSURLRequest *request, NSHTTPURLResponse *response, UIImage *image) {
+                
                 imageView.image = image;
+                
             } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error) {
                 NSLog(@"%@", error);
             }];
-#else
-            [imageView setImageWithURL:[NSURL URLWithString:imageUrlString] placeholderImage:self.placeholderImage];
-#endif
             return;
         }
     }
@@ -200,6 +203,8 @@ typedef NS_ENUM(NSInteger, ImagesScrollViewPage) {
     
     if (_imagesCount > 0) {
         [self loadImageWithIndex:0 at:self.isLoop ? ImagesScrollViewPageCurrent : ImagesScrollViewPagePrevious];
+        // 回调当前Index
+        [self callbackScrollToIndex];
     }
     if (_imagesCount > 1) {
         [self loadImageWithIndex:1 at:self.isLoop ? ImagesScrollViewPageNext : ImagesScrollViewPageCurrent];
@@ -283,6 +288,7 @@ typedef NS_ENUM(NSInteger, ImagesScrollViewPage) {
     }
     
     [self changePageControlIndex];
+    [self callbackScrollToIndex];
 }
 
 // 开始拖动View时暂停自动滚动
@@ -311,6 +317,7 @@ typedef NS_ENUM(NSInteger, ImagesScrollViewPage) {
             [_autoScrollTimer invalidate];
         }
         _autoScrollTimer = [NSTimer scheduledTimerWithTimeInterval:self.autoScrollInterval target:self selector:@selector(autoScrollAction) userInfo:nil repeats:YES];
+        [[NSRunLoop mainRunLoop] addTimer:_autoScrollTimer forMode:NSRunLoopCommonModes];
     } else {
         [_autoScrollTimer invalidate];
         _autoScrollTimer = nil;
@@ -342,6 +349,7 @@ typedef NS_ENUM(NSInteger, ImagesScrollViewPage) {
 // 不循环状态下回滚至最前一页
 - (void)scrollBackToFirst:(NSInteger)numToScroll interval:(NSTimeInterval)interval
 {
+    self.mainScrollView.userInteractionEnabled = NO;
     CGFloat scrollViewWidth = self.mainScrollView.bounds.size.width;
     if (numToScroll == _imagesCount - 1) {
         [UIView animateWithDuration:interval delay:0.5 options:UIViewAnimationOptionCurveEaseIn animations:^{
@@ -358,6 +366,8 @@ typedef NS_ENUM(NSInteger, ImagesScrollViewPage) {
             [self scrollBackToFirst:numToScroll - 1 interval:interval];
         }];
     } else if (numToScroll == 0) {
+        [self scrollViewDidEndDecelerating:self.mainScrollView];
+        self.mainScrollView.userInteractionEnabled = YES;
         [self autoScrollImages:YES];
     }
 }
@@ -409,6 +419,14 @@ typedef NS_ENUM(NSInteger, ImagesScrollViewPage) {
 {
     if ([self.pageControl respondsToSelector:@selector(setCurrentPage:)]) {
         self.pageControl.currentPage = _currentIndex;
+    }
+}
+
+// 回调当前页面Index
+- (void)callbackScrollToIndex
+{
+    if ([self.delegate respondsToSelector:@selector(imagesScrollView:didScrollToIndex:)]) {
+        [self.delegate imagesScrollView:self didScrollToIndex:_currentIndex];
     }
 }
 

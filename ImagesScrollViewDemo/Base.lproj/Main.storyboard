@@ -16,19 +16,44 @@
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="apx-gO-IWc" customClass="ImagesScrollView">
-                                <rect key="frame" x="0.0" y="270" width="600" height="200"/>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="FVA-D6-vH2">
+                                <rect key="frame" x="0.0" y="20" width="600" height="580"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="lyf-GX-3lA">
+                                        <rect key="frame" x="0.0" y="0.0" width="600" height="1000"/>
+                                        <subviews>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="apx-gO-IWc" customClass="ImagesScrollView">
+                                                <rect key="frame" x="0.0" y="0.0" width="600" height="200"/>
+                                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="200" id="DQB-Lh-nLj"/>
+                                                </constraints>
+                                            </view>
+                                        </subviews>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                        <constraints>
+                                            <constraint firstAttribute="trailing" secondItem="apx-gO-IWc" secondAttribute="trailing" id="5Hh-mX-AjT"/>
+                                            <constraint firstAttribute="height" constant="1000" id="ISb-8s-Ehe"/>
+                                            <constraint firstItem="apx-gO-IWc" firstAttribute="top" secondItem="lyf-GX-3lA" secondAttribute="top" id="sj8-vh-ogL"/>
+                                            <constraint firstItem="apx-gO-IWc" firstAttribute="leading" secondItem="lyf-GX-3lA" secondAttribute="leading" id="zHt-VA-7MQ"/>
+                                        </constraints>
+                                    </view>
+                                </subviews>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="200" id="aKo-8S-E8v"/>
+                                    <constraint firstAttribute="bottom" secondItem="lyf-GX-3lA" secondAttribute="bottom" id="4Ys-oO-QCv"/>
+                                    <constraint firstItem="lyf-GX-3lA" firstAttribute="leading" secondItem="FVA-D6-vH2" secondAttribute="leading" id="DbL-y0-f8d"/>
+                                    <constraint firstAttribute="centerX" secondItem="lyf-GX-3lA" secondAttribute="centerX" id="eLC-f2-FiY"/>
+                                    <constraint firstItem="lyf-GX-3lA" firstAttribute="top" secondItem="FVA-D6-vH2" secondAttribute="top" id="gYa-om-KNl"/>
+                                    <constraint firstAttribute="trailing" secondItem="lyf-GX-3lA" secondAttribute="trailing" id="iMV-cH-ceU"/>
                                 </constraints>
-                            </view>
+                            </scrollView>
                         </subviews>
                         <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
-                            <constraint firstItem="apx-gO-IWc" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="250" id="nC7-99-VtV"/>
-                            <constraint firstItem="apx-gO-IWc" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="p78-ty-EDm"/>
-                            <constraint firstAttribute="trailing" secondItem="apx-gO-IWc" secondAttribute="trailing" id="uQP-Ez-VKn"/>
+                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="FVA-D6-vH2" secondAttribute="bottom" id="99M-a9-guM"/>
+                            <constraint firstItem="FVA-D6-vH2" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" id="hIi-67-OlJ"/>
+                            <constraint firstAttribute="trailing" secondItem="FVA-D6-vH2" secondAttribute="trailing" id="nWF-Hd-mzM"/>
+                            <constraint firstItem="FVA-D6-vH2" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="pMV-uU-ibd"/>
                         </constraints>
                     </view>
                     <connections>

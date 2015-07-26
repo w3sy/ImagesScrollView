@@ -38,6 +38,11 @@
  */
 - (void)imagesScrollView:(ImagesScrollView *)imagesScrollView didSelectIndex:(NSInteger)index;
 
+/**
+ * imagesScrollView已经滚动到index页
+ */
+- (void)imagesScrollView:(ImagesScrollView *)imagesScrollView didScrollToIndex:(NSInteger)index;
+
 @end
 
 @interface ImagesScrollView : UIView

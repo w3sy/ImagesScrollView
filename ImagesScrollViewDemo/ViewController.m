@@ -29,12 +29,13 @@
     _images = [NSMutableArray array];
     _imageUrls = [NSMutableArray array];
     for (NSInteger i = 0; i < 12; i++) {
-        NSString * imgName = [NSString stringWithFormat:@"background_0%02ld.jpg", i];
-        UIImage * img = [UIImage imageNamed:imgName];
+        NSString * imgName = [NSString stringWithFormat:@"background_0%02ld", i];
+        NSString * imgPath = [[NSBundle mainBundle] pathForResource:imgName ofType:@"jpg"];
+        UIImage * img = [UIImage imageWithContentsOfFile:imgPath];
         [_images addObject:img];
         
-        //NSString * imgUrl = [NSString stringWithFormat:@"http://swkits.com/Images/background_0%02ld.jpg", i];
-        //[_imageUrls addObject:imgUrl];
+        NSString * imgUrl = [NSString stringWithFormat:@"http://swkits.com/Images/background_0%02ld.jpg", i];
+        [_imageUrls addObject:imgUrl];
     }
     [self.imagesScrollView reloadData];
     self.imagesScrollView.isLoop = YES;
@@ -43,10 +44,10 @@
     //self.imagesScrollView.autoScrollInterval = 0;
     
     
-//    self.imagesScrollViewfromUrl = [[ImagesScrollView alloc] initWithFrame:CGRectMake(0, 40, 320, 200)];
-//    [self.view addSubview:self.imagesScrollViewfromUrl];
-//    self.imagesScrollViewfromUrl.delegate = self;
-    
+    self.imagesScrollViewfromUrl = [[ImagesScrollView alloc] initWithFrame:CGRectMake(0, 240, 320, 200)];
+    [self.view addSubview:self.imagesScrollViewfromUrl];
+    self.imagesScrollViewfromUrl.delegate = self;
+    self.imagesScrollViewfromUrl.autoScrollInterval = 2;
 }
 
 - (void)didReceiveMemoryWarning {
@@ -84,6 +85,11 @@
 - (void)imagesScrollView:(ImagesScrollView *)imagesScrollView didSelectIndex:(NSInteger)index
 {
     NSLog(@"tap:%@ at:%ld", imagesScrollView, index);
+}
+
+- (void)imagesScrollView:(ImagesScrollView *)imagesScrollView didScrollToIndex:(NSInteger)index
+{
+    NSLog(@"%@ scrollToIndex:%ld",imagesScrollView , index);
 }
 
 @end
