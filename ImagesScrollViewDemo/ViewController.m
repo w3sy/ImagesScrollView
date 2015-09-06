@@ -15,8 +15,8 @@
     NSMutableArray * _imageUrls;
 }
 
-@property (weak, nonatomic) IBOutlet ImagesScrollView *imagesScrollView;
-@property (strong, nonatomic) ImagesScrollView *imagesScrollViewfromUrl;
+@property (weak, nonatomic) IBOutlet ImagesScrollView *imagesScrollView; //在storyboard上创建的
+@property (strong, nonatomic) ImagesScrollView *imagesScrollViewfromUrl; //用代码创建的
 
 @end
 
@@ -25,24 +25,26 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
-    self.imagesScrollView.autoScrollInterval = 2;
+    
     _images = [NSMutableArray array];
     _imageUrls = [NSMutableArray array];
     for (NSInteger i = 0; i < 12; i++) {
+        // 准备本地数据源
         NSString * imgName = [NSString stringWithFormat:@"background_0%02ld", i];
         NSString * imgPath = [[NSBundle mainBundle] pathForResource:imgName ofType:@"jpg"];
         UIImage * img = [UIImage imageWithContentsOfFile:imgPath];
         [_images addObject:img];
         
+        // 准备远程数据源
         NSString * imgUrl = [NSString stringWithFormat:@"http://swkits.com/Images/background_0%02ld.jpg", i];
         [_imageUrls addObject:imgUrl];
     }
+    
     [self.imagesScrollView reloadData];
     self.imagesScrollView.isLoop = YES;
     self.imagesScrollView.delegate = self;
     [self.imagesScrollView setImageViewContentMode:UIViewContentModeScaleAspectFill];
-    //self.imagesScrollView.autoScrollInterval = 0;
-    
+    self.imagesScrollView.autoScrollInterval = 2;
     
     self.imagesScrollViewfromUrl = [[ImagesScrollView alloc] initWithFrame:CGRectMake(0, 240, 320, 200)];
     [self.view addSubview:self.imagesScrollViewfromUrl];

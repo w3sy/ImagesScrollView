@@ -40,6 +40,7 @@ typedef NS_ENUM(NSInteger, ImagesScrollViewPage) {
     }
     return self;
 }
+
 // 在storyboard中加载会调用该方法
 - (instancetype)initWithCoder:(NSCoder *)aDecoder
 {
@@ -170,6 +171,8 @@ typedef NS_ENUM(NSInteger, ImagesScrollViewPage) {
         default:
             break;
     }
+    // 同步请求图片或占位图
+    imageView.image = [self imageWithIndex:index];
     // 判断是否通过网络下载图片
     if ([self.delegate respondsToSelector:@selector(imagesScrollView:imageUrlStringWithIndex:)]) {
         NSString * imageUrlString = [self.delegate imagesScrollView:self imageUrlStringWithIndex:index];
@@ -184,11 +187,8 @@ typedef NS_ENUM(NSInteger, ImagesScrollViewPage) {
             } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error) {
                 NSLog(@"%@", error);
             }];
-            return;
         }
     }
-    // 否则直接请求图片
-    imageView.image = [self imageWithIndex:index];
 }
 
 // 初始化时加载所需图片
