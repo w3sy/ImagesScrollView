@@ -235,6 +235,7 @@ typedef NS_ENUM(NSInteger, ImagesScrollViewPage) {
         if (!self.isLoop && _currentIndex >= _imagesCount - 1) {
             _currentIndex = _imagesCount - 1;
             [self changePageControlIndex];
+            [self callbackScrollToIndex];
             return;
         }
         // 一般情况下更新图片位置以便复用UIImageView
@@ -257,6 +258,7 @@ typedef NS_ENUM(NSInteger, ImagesScrollViewPage) {
         if (!self.isLoop && _currentIndex <= 0) {
             _currentIndex = 0;
             [self changePageControlIndex];
+            [self callbackScrollToIndex];
             return;
         }
         self.nextImageView.image = self.currentImageView.image;
