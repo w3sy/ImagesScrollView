@@ -110,6 +110,7 @@ typedef NS_ENUM(NSInteger, ImagesScrollViewPage) {
 {
     self.mainScrollView.delegate = self;
     self.mainScrollView.scrollEnabled = NO;
+    self.mainScrollView.scrollsToTop = NO;
     _showPageControl = YES;
     if (self.delegate) {
         [self requestImagesCount];
